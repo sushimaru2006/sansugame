@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>わくわく算数ランド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* Tailwind: bg-sky-50 */
+        }
+        .mochiy-pop {
+            font-family: 'Mochiy Pop One', sans-serif;
+        }
+        .disabled-button {
+            background-color: #9ca3af; /* Tailwind: bg-gray-400 */
+            cursor: not-allowed;
+        }
+        .message-box {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .message-box.hidden {
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+        /* カスタムアニメーション */
+        @keyframes tada {
+            0% {transform: scale(1);}
+            10%, 20% {transform: scale(0.9) rotate(-3deg);}
+            30%, 50%, 70%, 90% {transform: scale(1.1) rotate(3deg);}
+            40%, 60%, 80% {transform: scale(1.1) rotate(-3deg);}
+            100% {transform: scale(1) rotate(0);}
+        }
+        .animate-tada {
+            animation: tada 1s ease infinite;
+        }
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);}
+            20%, 40%, 60%, 80% {transform: translateX(5px);}
+        }
+        .animate-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        .ad-placeholder {
+            border: 2px dashed #cbd5e1; /* Tailwind: border-slate-300 */
+            background-color: #f1f5f9; /* Tailwind: bg-slate-100 */
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
+        <h1 class="mochiy-pop text-3xl sm:text-4xl font-bold text-sky-600 mb-6">わくわく算数ランド</h1>
+
+        <div id="difficulty-selector" class="mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-3">むずかしさを えらんでね！</h2>
+            <div class="flex justify-center space-x-2 sm:space-x-4">
+                <button onclick="setDifficulty('easy')" class="difficulty-btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-105">かんたん</button>
+                <button onclick="setDifficulty('medium')" class="difficulty-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-105">ふつう</button>
+                <button onclick="setDifficulty('hard')" class="difficulty-btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-105">むずかしい</button>
+            </div>
+        </div>
+
+        <div id="game-area" class="hidden">
+            <div id="problem-area" class="mb-6 p-4 bg-sky-100 rounded-lg">
+                <p class="text-2xl sm:text-3xl font-bold text-gray-800">
+                    <span id="num1"></span> + <span id="num2"></span> = ?
+                </p>
+            </div>
+
+            <div class="mb-6">
+                <input type="number" id="answer" class="text-xl sm:text-2xl p-3 border-2 border-sky-300 rounded-lg w-full text-center focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" placeholder="こたえを入力">
+            </div>
+
+            <button id="check-button" onclick="checkAnswer()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-lg transition duration-150 ease-in-out transform hover:scale-105 mb-4">
+                こたえあわせ
+            </button>
+
+            <button id="next-button" onclick="nextProblem()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-lg transition duration-150 ease-in-out transform hover:scale-105 hidden">
+                つぎのもんだい
+            </button>
+        </div>
+
+        <div id="ad-area" class="mt-8 p-4 ad-placeholder rounded-lg">
+            <p class="text-slate-500 text-sm">ここに広告が表示されます</p>
+            <img src="https://placehold.co/300x100/e2e8f0/94a3b8?text=広告スペース" alt="広告のプレースホルダー" class="mx-auto mt-2 rounded">
+            </div>
+    </div>
+
+    <div id="message-box" class="fixed top-5 right-5 bg-white p-4 rounded-lg shadow-xl border-l-4 hidden max-w-sm z-50">
+        <div class="flex items-center">
+            <div id="message-icon" class="mr-3 text-2xl"></div>
+            <p id="message-text" class="text-gray-700 font-semibold"></p>
+        </div>
+    </div>
+
+    <script>
+        // DOM要素の取得
+        const num1Element = document.getElementById('num1');
+        const num2Element = document.getElementById('num2');
+        const answerElement = document.getElementById('answer');
+        const checkButton = document.getElementById('check-button');
+        const nextButton = document.getElementById('next-button');
+        const difficultySelector = document.getElementById('difficulty-selector');
+        const gameArea = document.getElementById('game-area');
+        const problemArea = document.getElementById('problem-area');
+        const adArea = document.getElementById('ad-area'); // 広告エリアの要素
+
+        // メッセージボックス関連
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        const messageIcon = document.getElementById('message-icon');
+
+        let currentNum1, currentNum2, correctAnswer;
+        let difficulty = 'easy'; // 'easy', 'medium', 'hard'
+
+        // 難易度設定
+        function setDifficulty(level) {
+            difficulty = level;
+            difficultySelector.classList.add('hidden');
+            gameArea.classList.remove('hidden');
+            adArea.classList.remove('hidden'); // 難易度選択後、広告エリアも表示
+            // 難易度ボタンの選択状態を更新
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-offset-2', 'ring-purple-500');
+                if (btn.textContent.toLowerCase().includes(level === 'easy' ? 'かんたん' : level === 'medium' ? 'ふつう' : 'むずかしい')) {
+                    btn.classList.add('ring-4', 'ring-offset-2', 'ring-purple-500');
+                }
+            });
+            generateProblem();
+        }
+
+        // 問題を生成する関数
+        function generateProblem() {
+            let maxNum;
+            switch (difficulty) {
+                case 'easy':
+                    maxNum = 10; // 1桁の数
+                    break;
+                case 'medium':
+                    maxNum = 50; // 10の位まで
+                    break;
+                case 'hard':
+                    maxNum = 100; // 100までの数
+                    break;
+                default:
+                    maxNum = 10;
+            }
+
+            currentNum1 = Math.floor(Math.random() * maxNum) + 1;
+            currentNum2 = Math.floor(Math.random() * maxNum) + 1;
+            correctAnswer = currentNum1 + currentNum2;
+
+            num1Element.textContent = currentNum1;
+            num2Element.textContent = currentNum2;
+
+            // UIリセット
+            answerElement.value = '';
+            answerElement.disabled = false;
+            answerElement.classList.remove('border-red-500', 'border-green-500', 'animate-shake');
+            problemArea.classList.remove('animate-tada');
+            checkButton.classList.remove('hidden');
+            checkButton.disabled = false;
+            checkButton.classList.remove('disabled-button');
+            nextButton.classList.add('hidden');
+            answerElement.focus();
+        }
+
+        // 答えをチェックする関数
+        function checkAnswer() {
+            const userAnswer = parseInt(answerElement.value);
+
+            if (isNaN(userAnswer)) {
+                showMessage('ちゃんと数字をいれてね！ 🤔', 'warning');
+                answerElement.classList.add('animate-shake');
+                return;
+            }
+
+            answerElement.disabled = true;
+            checkButton.disabled = true;
+            checkButton.classList.add('disabled-button');
+
+            if (userAnswer === correctAnswer) {
+                showMessage('せいかい！すごいね！ 🎉', 'success');
+                answerElement.classList.remove('border-red-500', 'animate-shake');
+                answerElement.classList.add('border-green-500');
+                problemArea.classList.add('animate-tada'); // 正解アニメーション
+                nextButton.classList.remove('hidden');
+                nextButton.focus();
+            } else {
+                showMessage(`ざんねん... ちがうよ。こたえは ${correctAnswer} だったね。😢`, 'error');
+                answerElement.classList.remove('border-green-500');
+                answerElement.classList.add('border-red-500', 'animate-shake'); // 不正解アニメーション
+                nextButton.classList.remove('hidden'); // 間違えても次の問題に進めるようにする
+                nextButton.focus();
+            }
+        }
+
+        // 次の問題へ進む関数
+        function nextProblem() {
+            generateProblem();
+        }
+
+        // カスタムメッセージ表示関数
+        function showMessage(text, type = 'info') {
+            messageText.textContent = text;
+            messageBox.classList.remove('hidden', 'border-green-400', 'border-red-400', 'border-yellow-400', 'border-blue-400');
+            messageIcon.textContent = '';
+
+            switch (type) {
+                case 'success':
+                    messageBox.classList.add('border-green-400');
+                    messageIcon.textContent = '🥳';
+                    break;
+                case 'error':
+                    messageBox.classList.add('border-red-400');
+                    messageIcon.textContent = '😥';
+                    break;
+                case 'warning':
+                    messageBox.classList.add('border-yellow-400');
+                    messageIcon.textContent = '🤔';
+                    break;
+                default:
+                    messageBox.classList.add('border-blue-400');
+                    messageIcon.textContent = 'ℹ️';
+            }
+
+            // 表示して3秒後に自動で消す
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Enterキーで答え合わせ
+        answerElement.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && !checkButton.disabled) {
+                checkAnswer();
+            }
+        });
+
+        // 初期化：広告エリアを最初は非表示にする
+        if (adArea) { // adAreaが存在するか確認
+             adArea.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
