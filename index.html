@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>わくわく算数ランド</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6215247937346705"
-        crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Mochiy+Pop+One&display=swap" rel="stylesheet">
     <style>
         body {
@@ -46,10 +44,6 @@
         }
         .animate-shake {
             animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-        .ad-placeholder {
-            border: 2px dashed #cbd5e1; /* Tailwind: border-slate-300 */
-            background-color: #f1f5f9; /* Tailwind: bg-slate-100 */
         }
     </style>
 </head>
@@ -95,19 +89,6 @@
         </div>
     </div>
 
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6215247937346705"
-        crossorigin="anonymous"></script>
-    <!-- Unit1 -->
-    <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-client="ca-pub-6215247937346705"
-        data-ad-slot="6679009248"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
-    <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-
     <script>
         // DOM要素の取得
         const num1Element = document.getElementById('num1');
@@ -118,7 +99,6 @@
         const difficultySelector = document.getElementById('difficulty-selector');
         const gameArea = document.getElementById('game-area');
         const problemArea = document.getElementById('problem-area');
-        const adArea = document.getElementById('ad-area'); // 広告エリアの要素
 
         // メッセージボックス関連
         const messageBox = document.getElementById('message-box');
@@ -133,7 +113,6 @@
             difficulty = level;
             difficultySelector.classList.add('hidden');
             gameArea.classList.remove('hidden');
-            adArea.classList.remove('hidden'); // 難易度選択後、広告エリアも表示
             // 難易度ボタンの選択状態を更新
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
                 btn.classList.remove('ring-4', 'ring-offset-2', 'ring-purple-500');
@@ -251,11 +230,6 @@
                 checkAnswer();
             }
         });
-
-        // 初期化：広告エリアを最初は非表示にする
-        if (adArea) { // adAreaが存在するか確認
-             adArea.classList.add('hidden');
-        }
     </script>
 </body>
 </html>
